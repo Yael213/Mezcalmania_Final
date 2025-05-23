@@ -1,0 +1,139 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+
+model Asociada {
+  id                Int @id @default(autoincrement())
+  nombre            String
+  puesto            String
+  alta              Boolean @default(true)
+  numero            String
+  correo            String
+  facebook          String
+  instragram        String
+  biografia         String
+  imagen            String
+  marcas            AsociadaMarca[]
+}
+
+model Marca {
+  id                Int @id @default(autoincrement())
+  nombre            String
+  descripcion       String @default("none")
+  activa            Boolean @default(true)
+  imagen            String
+  facebook          String @default("/")
+  instagram         String @default("/")
+  web               String @default("/")
+  asociadas         AsociadaMarca[]
+  mezcal            Mezcal[]
+}
+
+model AsociadaMarca {
+  asociadaId        Int
+  marcaId           Int
+  asociada          Asociada @relation(fields: [asociadaId], references: [id], onDelete: Cascade)
+  marca             Marca @relation(fields: [marcaId], references: [id], onDelete: Cascade)
+
+  @@id([asociadaId, marcaId])
+}
+
+model Mezcal {
+  id                Int @id @default(autoincrement())
+  activo            Boolean @default(true)
+  nombre            String
+  precio            Float
+  cantidad          Int @default(0)
+  clase             String
+  poblado           String
+  municipio         String
+  agave             String
+  cocimiento        String
+  molienda          String
+  fermentacion      String
+  destilacion       String
+  presentacion      String
+  riquezaAlcoholica String
+  imagen            String
+  marcaId           Int
+  marca             Marca @relation(fields: [marcaId], references: [id])
+  renglonPedido     RenglonPedido[]
+}
+
+model Pedido {
+  id                Int @id @default(autoincrement())
+  fecha             DateTime
+  total             Float
+  tipoEnvio         Int
+  renglonPedido     RenglonPedido[]
+  nombre            String
+  apellidoPaterno   String
+  apellidoMaterno   String
+  nombreEmpresa     String
+  direccion         String
+  ciudad            String
+  estado            String
+  codigoPostal      String
+  telefono          String
+  correoElectronico String
+  notas             String
+} 
+
+model RenglonPedido {
+  id                Int @id @default(autoincrement())
+  cantidad          Int
+  precio            Float
+  mezcal            Mezcal @relation(fields: [mezcalId], references: [id])
+  mezcalId          Int
+  pedido            Pedido @relation(fields: [pedidoId], references: [id])
+  pedidoId          Int
+}
+
+model Master {
+  id                Int @id @default(autoincrement())
+  email             String
+  password          String 
+}
+
+model Cliente {
+  id                Int @id @default(autoincrement())
+  nombre            String
+  apellido          String
+  email             String
+  password          String        
+  telefono          String
+  direccion         Direccion[]
+}
+
+model Direccion {
+  id                Int @id @default(autoincrement())
+  calle             String
+  numero            String
+  colonia           String
+  municipio         String
+  estado            String
+  cp                String
+  cliente           Cliente @relation(fields: [clienteId], references: [id])
+  clienteId         Int
+}
+
+model EventosList{
+  id Int @id @default(autoincrement())
+  titulo String
+  resumen String
+  imagenPath String
+  fechaInicio DateTime @default(now())
+}

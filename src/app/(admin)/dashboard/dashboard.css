@@ -1,0 +1,113 @@
+h1{
+    font-size: 30px;
+    font-weight: bold;
+    background: none;
+    padding: 10px;
+    margin: 15px 30px;
+    color: black;
+}
+
+h2{
+    font-size: 20px;
+    font-weight: bold;
+    background: none;
+    margin-bottom: 10px 10px 15px;
+}
+
+div.enLinea{
+    display: inline-block;
+}
+
+div.centrar{
+    text-align: center;
+    margin: 0;
+    font-weight: bold;
+}
+
+div.bordeC{
+    /*border: 3px solid #32e532;*/
+    border: 2px solid transparent;
+}
+
+div.bordeC2{
+    /*border: 3px solid #d932e5;*/
+    border: 2px solid transparent;
+}
+
+.cartas{
+    padding: auto;
+    border-radius: 10px;
+}
+
+.cartita{
+  height: 100%; /* Asegura que el div tenga la altura completa del contenedor padre */
+  display: flex; /* Usa flexbox para controlar el posicionamiento vertical */
+  flex-direction: column; /* Alinea los elementos internos en columna */
+  justify-content: center; 
+}
+
+.carta1{
+    background-color: #21A3A4;
+    color: white;
+}
+
+.carta2{
+    background-color: white;
+    color: #8D1A57;
+    border: 3px solid #8D1A57;
+}
+
+.carta3{
+    background-color: white;
+    color: #307475;
+    border: 3px solid #307475;
+}
+
+.carta4{
+    background-color: #6B8E23;
+    color: white;
+    border: 3px solid white;
+}
+
+
+/* Estilos para la tabla */
+table {
+    width: 100%;
+    border-spacing: 4px; /* Espacio entre celdas */
+  }
+  
+  /* Estilos para las celdas de la tabla */
+  th, td {
+    border-bottom: 1px solid #ccc; /* Línea gris entre filas */
+    padding: 8px;
+    text-align: left;
+  }
+
+  th {
+    background-color: #8D1A57;
+    color: #FFF;
+    border-radius: 8px; /* Borde redondeado */
+    text-align: center;
+    margin: 14px;
+  }
+
+  td{
+    color: black;
+  }
+  
+  /* Estilos para la fila del encabezado */
+  thead tr {
+    background-color: #8D1A57;
+    color: #FFF;
+  }
+  
+  /* Estilos para la última fila */
+  tbody tr:last-child {
+    background-color: #FFF;
+  }
+  
+  /* Estilos para la última columna */
+  td:last-child {
+    font-weight: bold;
+  }
+  
