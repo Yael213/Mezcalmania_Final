@@ -90,97 +90,115 @@ const EventosList = () => {
   }
 
   return (
-    <div className=" relative font-roboto w-[350vh] h-[300vh] bg-[#E1DDDD] flex flex-col justify-start  m-10 text-black">
-      <div className="flex flex-col justify-end  m-10 top-0">
-        <h1 className="font-bold p-8 text-black text-4xl ">Eventos</h1>
-        <div className="bg-data-cherry-500 p-4 mb-4 rounded-lg text-white">
-          Lista de eventos
+    <div className="relative font-roboto py-10 bg-[#E1DDDD] min-h-screen">
+      <div className="container mx-auto px-4">
+        {/* Encabezado */}
+        <div className="mb-8">
+          <h1 className="font-bold text-4xl mb-2 text-[#333]">Eventos</h1>
+          <div className="bg-data-cherry-500 p-4 rounded-lg text-white text-lg font-medium shadow-md">
+            Lista de eventos
+          </div>
         </div>
-      </div>
 
-      <table className="bg-[#FBFBFB] m-4 rounded-3xl w-[95%]">
-        <thead>
-          <tr className="bg-[#FBFBFB] m-10 rounded-3xl px-7 py-7">
-            <th>ID</th>
-            <th>Título</th>
-            <th>Resumen</th>
-            <th>Imagen Path</th>
-            <th>Fecha de Inicio</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {eventos.map((evento) => (
-            <tr key={evento.id} className="mx-4 px-4 py-4">
-              <td className="w-[5%]">{evento.id}</td>
-              <td className="w-[20%]">{evento.titulo}</td>
-              <td className="w-[30%]">{evento.resumen}</td>
-              <td className="w-[10%]">
-                {' '}
-                <img src={evento.imagenPath} className="w-[90%] p-2" />{' '}
-              </td>
-              <td className="w-[15%]">
-                {new Date(evento.fechaInicio).toLocaleString()}
-              </td>
-              <td className="w-[10%]">
-                <button
-                  onClick={() => handleEliminarEvento(evento.id)}
-                  className="bg-data-cherry-500 p-2 mb-2 rounded-lg text-white"
-                >
-                  Eliminar
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <div className="bg-data-cherry-500 p-4 mb-4 rounded-lg text-white m-6 w-[95%]">
-        Agregar nuevo evento
-      </div>
-
-      <form
-        onSubmit={handleAgregarEvento}
-        className="w-[95%] mx-auto bg-white p-8 rounded-lg shadow-md"
-      >
-        <div className="mb-4">
-          <label className="block text-gray-700 font-bold mb-2">Título:</label>
-          <input
-            type="text"
-            value={titulo}
-            onChange={(e) => setTitulo(e.target.value)}
-            required
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:bg-slate-200"
-          />
+        {/* Tabla de eventos */}
+        <div className="bg-[#FBFBFB] rounded-3xl shadow-lg overflow-hidden mb-8">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-data-cherry-860 text-white">
+                <tr>
+                  <th className="px-6 py-4 text-left">ID</th>
+                  <th className="px-6 py-4 text-left">Título</th>
+                  <th className="px-6 py-4 text-left">Resumen</th>
+                  <th className="px-6 py-4 text-left">Imagen</th>
+                  <th className="px-6 py-4 text-left">Fecha</th>
+                  <th className="px-6 py-4 text-center">Acciones</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {eventos.map((evento) => (
+                  <tr key={evento.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4">{evento.id}</td>
+                    <td className="px-6 py-4 font-medium">{evento.titulo}</td>
+                    <td className="px-6 py-4 text-gray-600 max-w-xs truncate">{evento.resumen}</td>
+                    <td className="px-6 py-4">
+                      <img 
+                        src={evento.imagenPath} 
+                        className="w-20 h-20 object-cover rounded-lg border border-gray-200"
+                        alt={evento.titulo}
+                      />
+                    </td>
+                    <td className="px-6 py-4 text-gray-600">
+                      {new Date(evento.fechaInicio).toLocaleDateString('es-MX')}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <button
+                        onClick={() => handleEliminarEvento(evento.id)}
+                        className="bg-data-cherry-500 hover:bg-data-cherry-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+                      >
+                        Eliminar
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-        <div className="mb-4">
-          <label className="block text-gray-700 font-bold mb-2">Resumen:</label>
-          <input
-            type="files"
-            value={resumen}
-            onChange={(e) => setResumen(e.target.value)}
-            required
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:bg-slate-200"
-          />
-        </div>
+
+        {/* Formulario para agregar nuevo evento */}
         <div className="mb-6">
-          <label className="block text-gray-700 font-bold mb-2">Imagen:</label>
-          <input
-            type="file"
-            onChange={(e) => {
-              setFile(e.target.files[0])
-            }}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:bg-slate-200"
-            placeholder="Foto"
-          />
+          <div className="bg-data-cherry-500 p-4 rounded-lg text-white text-lg font-medium shadow-md mb-6">
+            Agregar nuevo evento
+          </div>
+          
+          <form
+            onSubmit={handleAgregarEvento}
+            className="bg-white p-8 rounded-3xl shadow-md"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div>
+                <label className="block text-gray-700 font-medium mb-2">Título:</label>
+                <input
+                  type="text"
+                  value={titulo}
+                  onChange={(e) => setTitulo(e.target.value)}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-data-cherry-300"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 font-medium mb-2">Imagen:</label>
+                <input
+                  type="file"
+                  onChange={(e) => setFile(e.target.files[0])}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-data-cherry-300 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-data-cherry-100 file:text-data-cherry-700 hover:file:bg-data-cherry-200"
+                  required
+                />
+              </div>
+            </div>
+            
+            <div className="mb-6">
+              <label className="block text-gray-700 font-medium mb-2">Resumen:</label>
+              <textarea
+                value={resumen}
+                onChange={(e) => setResumen(e.target.value)}
+                required
+                rows={4}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-data-cherry-300"
+              />
+            </div>
+            
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                className="bg-data-cherry-500 hover:bg-data-cherry-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors duration-300"
+              >
+                Agregar Evento
+              </button>
+            </div>
+          </form>
         </div>
-        <button
-          type="submit"
-          className="w-[20%] bg-data-cherry-500 hover:bg-data-cherry-800 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline"
-        >
-          Agregar Evento
-        </button>
-      </form>
+      </div>
     </div>
   )
 }

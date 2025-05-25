@@ -22,7 +22,22 @@ export default function Nosotras() {
       setAsociadas(data)
     }
     fetchData()
-  })
+  }, [])
+
+  // Función para ordenar las asociadas por puesto
+  const ordenarAsociadas = (miembros) => {
+    const ordenPuestos = [
+      "Presidente",
+      "Vicepresidenta",
+      "Secretaria",
+      "Vicesecretaria",
+      "Miembro"
+    ];
+    
+    return [...miembros].sort((a, b) => {
+      return ordenPuestos.indexOf(a.puesto) - ordenPuestos.indexOf(b.puesto);
+    });
+  }
 
   const handleClick = () => {
     setIsClicked(!isClicked)
@@ -59,7 +74,7 @@ export default function Nosotras() {
         </div>
 
         <div className="flex flex-col">
-          {asociadas.map((asociada) =>
+          {ordenarAsociadas(asociadas).map((asociada) =>
             asociada.alta === isClicked ? (
               <div key={asociada.id} className="">
                 <Card asociada={asociada} />
@@ -70,34 +85,10 @@ export default function Nosotras() {
           )}
         </div>
 
-        {/*<div className='flex items-center justify-between p-10 w-auto'>
-          <Card foto="ALONDRA.jpg" id={1} />
-          <Card foto="ARGENTINA.jpg" id={2} />
-          <Card foto="DELIA_GARCIA.jpg" id={3} />
-          <Card foto="ESTRELLA.jpg" id={3} />
-        </div>*/}
-
         <div className="text-black flex p-2 justify-center py-5 px-10 items-center">
           <div className="font-semibold">
             <p>Miembros: {asociadas.length}</p>
           </div>
-          {/*<div className='flex items-center '>
-            <p className='px-2'>Mostrar</p>
-            <div className='border-2 rounded-md border-data-cherry-500 p-2 font-bold text-gray-400'>
-              <p className='flex items-center justify-center'>6 <MdKeyboardArrowDown size={17}/></p>
-            </div>
-            <p className='px-2 font-semibold'>Mostrando 1 - 8 de 18</p>
-          </div>
-          <div className='flex'>
-            <div className='border-2 flex items-center border-data-cherry-500 p-2 rounded-md mx-2'>
-              Filtro
-              <CiFilter size={17}/>
-            </div>
-            <div className='flex items-center border-2 border-data-cherry-500 p-2 rounded-md '>
-              <IoSearchSharp size={17}/>
-              Buscar Miembro
-            </div>
-          </div>*/}
         </div>
         <InsertarMezcalera
           isVisible={showModal}
