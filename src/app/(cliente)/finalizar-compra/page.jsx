@@ -38,6 +38,9 @@ const FinalizarCompra = () => {
   const { cartItems, addToCart, removeFromCart, clearCart, getCartTotal } =
     useContext(CartContext)
 
+  const [formErrors, setFormErrors] = useState({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
   const [fecha, setFecha] = useState('')
   const [totalPedido, setTotal] = useState('')
   const [tipoEnvio, setTipoEnvio] = useState('')
@@ -65,44 +68,85 @@ const FinalizarCompra = () => {
     setRenglonPedido(JSON.stringify(newRenglonPedido))
   }, [mezcalRows])
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-
-    const res = await fetch('/api/orders', {
-      method: 'POST',
-      body: JSON.stringify({
-        fecha: new Date(),
-        total,
-        tipoEnvio: parseInt(tipoEnvio),
-        nombre,
-        nombreEmpresa,
-        apellidoPaterno,
-        apellidoMaterno,
-        direccion,
-        ciudad,
-        estado,
-        codigoPostal,
-        telefono,
-        correoElectronico,
-        notas,
-        renglonPedido,
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-
-    if (res.ok) {
-      const data = await res.json()
-      console.log('Pedido created:', data)
-      clearCart()
-      window.location.assign('/finalizar-compra/' + data.id)
-    } else {
-      console.log('Error creating pedido')
+  const validateForm = () => {
+    const errors = {}
+    
+    if (!nombre) errors.nombre = "El nombre es obligatorio"
+    if (!apellidoPaterno) errors.apellidoPaterno = "El apellido paterno es obligatorio"
+    if (!direccion) errors.direccion = "La dirección es obligatoria"
+    if (!ciudad) errors.ciudad = "La ciudad es obligatoria"
+    if (!estado) errors.estado = "El estado es obligatorio"
+    if (!codigoPostal) errors.codigoPostal = "El código postal es obligatorio"
+    if (!telefono) errors.telefono = "El teléfono es obligatorio"
+    if (!correoElectronico) {
+      errors.correoElectronico = "El correo electrónico es obligatorio"
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correoElectronico)) {
+      errors.correoElectronico = "El correo electrónico no es válido"
     }
+    if (!tipoEnvio) errors.tipoEnvio = "Debes seleccionar un método de envío"
+    if (!paymentMethod) errors.paymentMethod = "Debes seleccionar un método de pago"
+    
+    setFormErrors(errors)
+    return Object.keys(errors).length === 0
   }
 
-  console.log(renglonPedido)
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    
+    if (!validateForm()) {
+      return
+    }
+    
+    setIsSubmitting(true)
+
+    const totalSubtotal = mezcalRows.reduce((acc, mezcalRows) => {
+      return acc + mezcalRows.precio * mezcalRows.cantidadUsuario
+    }, 0)
+
+    const shippingCost = 199
+    const total = tipoEnvio === '1' ? totalSubtotal + shippingCost : totalSubtotal
+
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        body: JSON.stringify({
+          fecha: new Date(),
+          total,
+          tipoEnvio: parseInt(tipoEnvio),
+          nombre,
+          nombreEmpresa,
+          apellidoPaterno,
+          apellidoMaterno,
+          direccion,
+          ciudad,
+          estado,
+          codigoPostal,
+          telefono,
+          correoElectronico,
+          notas,
+          renglonPedido,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        console.log('Pedido created:', data)
+        clearCart()
+        window.location.assign('/finalizar-compra/' + data.id)
+      } else {
+        console.log('Error creating pedido')
+        const errorData = await res.json()
+        console.error('Error details:', errorData)
+      }
+    } catch (error) {
+      console.error('Network error:', error)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   const totalSubtotal = mezcalRows.reduce((acc, mezcalRows) => {
     return acc + mezcalRows.precio * mezcalRows.cantidadUsuario
@@ -122,36 +166,40 @@ const FinalizarCompra = () => {
             <div className=" bg-gradient-to-t from-data-cherry-900/5 to-data-cherry-900/40  p-10 rounded-3xl text-white min-h-full h-screen border border-[#4E002B]/100 ">
               <div className="flex">
                 <div className="w-1/2 flex flex-col px-2">
-                  <label htmlFor="name">Nombre</label>
+                  <label htmlFor="name">Nombre*</label>
                   <input
                     type="text"
                     id="name"
                     name="clientName"
                     placeholder="Nombre"
-                    className="bg-[#790344]/25 bg-opacity-50 rounded-xl p-2 text-gray-300 placeholder:text-data-pink-200 "
+                    className={`bg-[#790344]/25 bg-opacity-50 rounded-xl p-2 text-gray-300 placeholder:text-data-pink-200 ${formErrors.nombre ? 'border border-red-500' : ''}`}
                     onChange={(e) => setNombre(e.target.value)}
+                    required
                   />
+                  {formErrors.nombre && <span className="text-red-500 text-sm">{formErrors.nombre}</span>}
                 </div>
                 <div className="w-1/2 flex flex-col px-2">
-                  <label htmlFor="middlename">Apellidos</label>
+                  <label htmlFor="middlename">Apellidos*</label>
                   <div className="flex w-full">
                     <input
                       type="text"
                       id="middlenameFather"
                       name="clientMiddlenameFather"
                       placeholder="Paterno"
-                      className="bg-[#790344]/25  w-1/2 rounded-xl p-2 text-gray-300 placeholder:text-data-pink-200 "
+                      className={`bg-[#790344]/25  w-1/2 rounded-xl p-2 text-gray-300 placeholder:text-data-pink-200 ${formErrors.apellidoPaterno ? 'border border-red-500' : ''}`}
                       onChange={(e) => setApellidoPaterno(e.target.value)}
+                      required
                     />
                     <input
                       type="text"
                       id="middlenameMother"
                       name="clientMiddlenameMother"
                       placeholder="Materno"
-                      className="bg-[#790344]/25  w-1/2 rounded-xl p-2 text-gray-300 placeholder:text-data-pink-200 "
+                      className="bg-[#790344]/25  w-1/2 rounded-xl p-2 text-gray-300 placeholder:text-data-pink-200"
                       onChange={(e) => setApellidoMaterno(e.target.value)}
                     />
                   </div>
+                  {formErrors.apellidoPaterno && <span className="text-red-500 text-sm">{formErrors.apellidoPaterno}</span>}
                 </div>
               </div>
               <div className="">
@@ -162,88 +210,99 @@ const FinalizarCompra = () => {
                     id="name"
                     name="clientName"
                     placeholder="Nombre de la empresa"
-                    className="bg-[#790344]/25 bg-opacity-50 rounded-xl p-2 text-gray-300 placeholder:text-data-pink-200 "
+                    className="bg-[#790344]/25 bg-opacity-50 rounded-xl p-2 text-gray-300 placeholder:text-data-pink-200"
                     onChange={(e) => setNombreEmpresa(e.target.value)}
                   />
                 </div>
               </div>
               <div className="">
                 <div className="flex flex-col px-2">
-                  <label htmlFor="address">Dirección del domicilio</label>
+                  <label htmlFor="address">Dirección del domicilio*</label>
                   <input
                     type="text"
                     id="address"
                     name="clientAddress"
                     placeholder="Número de la casa y nombre de la calle"
-                    className="bg-[#790344]/25 bg-opacity-50 rounded-xl p-2 text-gray-300 placeholder:text-data-pink-200 my-2"
+                    className={`bg-[#790344]/25 bg-opacity-50 rounded-xl p-2 text-gray-300 placeholder:text-data-pink-200 my-2 ${formErrors.direccion ? 'border border-red-500' : ''}`}
                     onChange={(e) => setDireccion(e.target.value)}
+                    required
                   />
                   <input
                     type="text"
                     id="address"
                     name="clientAddress"
                     placeholder="Apartamento, habitación, etc. (opcional)"
-                    className="bg-[#790344]/25 bg-opacity-50 rounded-xl p-2 text-gray-300 placeholder:text-data-pink-200 "
-                    onChange={(e) => setDireccion(e.target.value)}
+                    className="bg-[#790344]/25 bg-opacity-50 rounded-xl p-2 text-gray-300 placeholder:text-data-pink-200"
                   />
+                  {formErrors.direccion && <span className="text-red-500 text-sm">{formErrors.direccion}</span>}
                 </div>
               </div>
               <div className="flex">
                 <div className="w-1/2 flex flex-col px-2">
-                  <label htmlFor="city">Ciudad</label>
+                  <label htmlFor="city">Ciudad*</label>
                   <input
                     type="text"
                     id="city"
                     name="clientCity"
                     placeholder="Ciudad"
-                    className="bg-[#790344]/25 bg-opacity-50 rounded-xl p-2 text-gray-300 placeholder:text-data-pink-200 "
+                    className={`bg-[#790344]/25 bg-opacity-50 rounded-xl p-2 text-gray-300 placeholder:text-data-pink-200 ${formErrors.ciudad ? 'border border-red-500' : ''}`}
                     onChange={(e) => setCiudad(e.target.value)}
+                    required
                   />
+                  {formErrors.ciudad && <span className="text-red-500 text-sm">{formErrors.ciudad}</span>}
                 </div>
                 <div className="w-1/2 flex flex-col px-2">
-                  <label htmlFor="state">Estado</label>
+                  <label htmlFor="state">Estado*</label>
                   <input
                     type="text"
                     id="state"
                     name="clientState"
                     placeholder="Estado"
-                    className="bg-[#790344]/25 bg-opacity-50 rounded-xl p-2 text-gray-300 placeholder:text-data-pink-200 "
+                    className={`bg-[#790344]/25 bg-opacity-50 rounded-xl p-2 text-gray-300 placeholder:text-data-pink-200 ${formErrors.estado ? 'border border-red-500' : ''}`}
                     onChange={(e) => setEstado(e.target.value)}
+                    required
                   />
+                  {formErrors.estado && <span className="text-red-500 text-sm">{formErrors.estado}</span>}
                 </div>
               </div>
               <div className="flex flex-col px-2 ">
-                <label htmlFor="postal">Código postal</label>
+                <label htmlFor="postal">Código postal*</label>
                 <input
                   type="text"
                   id="postal"
                   name="clientPostalCode"
                   placeholder="Código postal"
-                  className="bg-[#790344]/25 bg-opacity-50 rounded-xl p-2 text-gray-300 placeholder:text-data-pink-200 "
+                  className={`bg-[#790344]/25 bg-opacity-50 rounded-xl p-2 text-gray-300 placeholder:text-data-pink-200 ${formErrors.codigoPostal ? 'border border-red-500' : ''}`}
                   onChange={(e) => setCodigoPostal(e.target.value)}
+                  required
                 />
+                {formErrors.codigoPostal && <span className="text-red-500 text-sm">{formErrors.codigoPostal}</span>}
               </div>
               <div className="flex flex-col px-2 ">
-                <label htmlFor="phone">Teléfono</label>
+                <label htmlFor="phone">Teléfono*</label>
                 <input
                   type="text"
                   id="phone"
                   name="clientPhone"
                   placeholder="Teléfono"
-                  className="bg-[#790344]/25 bg-opacity-50 rounded-xl p-2 text-gray-300 placeholder:text-data-pink-200 "
+                  className={`bg-[#790344]/25 bg-opacity-50 rounded-xl p-2 text-gray-300 placeholder:text-data-pink-200 ${formErrors.telefono ? 'border border-red-500' : ''}`}
                   onChange={(e) => setTelefono(e.target.value)}
+                  required
                 />
+                {formErrors.telefono && <span className="text-red-500 text-sm">{formErrors.telefono}</span>}
               </div>
               <div className="flex flex-col px-2">
-                <label htmlFor="email">Correo electrónico</label>
+                <label htmlFor="email">Correo electrónico*</label>
                 <input
-                  type="text"
+                  type="email"
                   id="email"
                   name="clientEmail"
                   placeholder="Correo electrónico"
-                  className="bg-[#790344]/25 bg-opacity-50 rounded-xl p-2 text-gray-300 placeholder:text-data-pink-200 "
+                  className={`bg-[#790344]/25 bg-opacity-50 rounded-xl p-2 text-gray-300 placeholder:text-data-pink-200 ${formErrors.correoElectronico ? 'border border-red-500' : ''}`}
                   onChange={(e) => setCorreoElectronico(e.target.value)}
+                  required
                 />
+                {formErrors.correoElectronico && <span className="text-red-500 text-sm">{formErrors.correoElectronico}</span>}
               </div>
               <div>
                 <div className="flex flex-col px-2">
@@ -293,7 +352,7 @@ const FinalizarCompra = () => {
                       </td>
                     </tr>
                     <tr className="">
-                      <th>Envío</th>
+                      <th>Envío*</th>
                       <th></th>
                       <th></th>
                       <td className="">
@@ -304,6 +363,7 @@ const FinalizarCompra = () => {
                             name="shippingMethod"
                             value="1"
                             onChange={(e) => setTipoEnvio(e.target.value)}
+                            required
                           />
                           <label htmlFor="mexicoShipping">
                             Envío (Todo Mexico) $
@@ -325,6 +385,7 @@ const FinalizarCompra = () => {
                             Recoger en tienda (Morelia Mich.)
                           </label>
                         </div>
+                        {formErrors.tipoEnvio && <span className="text-red-500 text-sm block">{formErrors.tipoEnvio}</span>}
                       </td>
                     </tr>
                     <hr className="h-[2px] w-full my-4 bg-data-cherry-500 border-0 rounded-3xl" />
@@ -346,7 +407,7 @@ const FinalizarCompra = () => {
             </div>
             <h1>DETALLES DEL PAGO</h1>
             <div className="bg-gradient-to-t from-data-cherry-900/5 to-data-cherry-900/40 p-10 rounded-3xl text-white h-max border border-[#4E002B]/100">
-              <h1>Método de pago</h1>
+              <h1>Método de pago*</h1>
               <div>
                 <input
                   type="radio"
@@ -354,6 +415,7 @@ const FinalizarCompra = () => {
                   name="paymentMethod"
                   value="paypal"
                   onChange={(e) => setPaymentMethod(e.target.value)}
+                  required
                 />
                 <label htmlFor="paypal">PayPal</label>
               </div>
@@ -367,6 +429,7 @@ const FinalizarCompra = () => {
                 />
                 <label htmlFor="creditCard">Tarjeta de crédito</label>
               </div>
+              {formErrors.paymentMethod && <span className="text-red-500 text-sm block">{formErrors.paymentMethod}</span>}
 
               {paymentMethod === 'paypal' && (
                 <div>
@@ -432,8 +495,9 @@ const FinalizarCompra = () => {
               <button
                 type="submit"
                 className="bg-[#7F0147] hover:bg-[#551538] rounded-md p-2 flex justify-center  w-full items-center  py-3"
+                disabled={isSubmitting}
               >
-                Finalizar la compra
+                {isSubmitting ? 'Procesando...' : 'Finalizar la compra'}
               </button>
             </div>
           </div>
